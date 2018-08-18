@@ -31,14 +31,13 @@ class SearchTerm(object):
             webenv = soup.select('webenv')[0].get_text()
             query_key = soup.select('querykey')[0].get_text()
 
-            if int(num==0):
+            if int(num)==0:
                 continue
             if int(num)>=20:           # set the max numbers to get in a database
-                url_summary = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?' + 'db=' + name + '&WebEnv=' + webenv + \
-                          '&query_key=' + query_key + '&retstart=0'+'&retmax=' + str(20)
-            else:
-                url_summary = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?' + 'db=' + name + '&WebEnv=' + webenv + \
-                              '&query_key=' + query_key + '&retstart=0'+'&retmax='+str(num)
+                num='20'
+            url_summary = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?' + 'db=' + name + '&WebEnv=' + webenv + \
+                          '&query_key=' + query_key + '&retstart=0'+'&retmax=' + str(num)
+
             webdata = requests.get(url=url_summary).text
             soup = BeautifulSoup(webdata, 'lxml')
 
@@ -75,10 +74,16 @@ class SearchTerm(object):
                             result[tag.name] += tag.get_text()
                         else:
                             result[tag.name] = tag.get_text()
+
+            results = json.dumps(result)
+            join_result = json.loads(results)
+            List.append(join_result)
+            result.clear()
+
         return List
 
 
 if __name__ == '__main__':
-    term = SearchTerm('tp54')
+    term = SearchTerm(input("Input the term you would like to search:"))
     term.search_query()
     print(term.search_summary())
