@@ -25,16 +25,23 @@ class SearchTerm(object):
         base_url='https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?' +'&usehistory=y' + '&term=' + self.term + '&db='
         List=[]
         for name,num in zip(self.dbnames,self.count):
-            url_search=base_url+name
+
+            if int(num) == 0:
+                continue
+
+            if int(num) >= 20:           # set the max numbers to get in a database
+                num = '20'
+            url_search = base_url+name
             webdata = requests.get(url=url_search).text
             soup = BeautifulSoup(webdata, 'lxml')
-            webenv = soup.select('webenv')[0].get_text()
-            query_key = soup.select('querykey')[0].get_text()
 
-            if int(num)==0:
-                continue
-            if int(num)>=20:           # set the max numbers to get in a database
-                num='20'
+            if soup.select('webenv') is not None and soup.select('querykey') is not None:
+                webenv = soup.select('webenv')[0].get_text()
+                query_key = soup.select('querykey')[0].get_text()
+
+            else:
+                pass     # use id
+
             url_summary = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?' + 'db=' + name + '&WebEnv=' + webenv + \
                           '&query_key=' + query_key + '&retstart=0'+'&retmax=' + str(num)
 
