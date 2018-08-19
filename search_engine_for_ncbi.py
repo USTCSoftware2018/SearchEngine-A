@@ -38,12 +38,23 @@ class SearchTerm(object):
             if soup.select('webenv') is not None and soup.select('querykey') is not None:
                 webenv = soup.select('webenv')[0].get_text()
                 query_key = soup.select('querykey')[0].get_text()
+                url_summary = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?' + 'db=' + name + '&WebEnv=' + webenv + \
+                              '&query_key=' + query_key + '&retstart=0' + '&retmax=' + str(num)
 
             else:
-                pass     # use id
+                ids=soup.select('id')
+                id_list=[]                 # use id
+                for id in ids:
+                    id_list.append(id.get_text())
+                if len(id_list)==1:
+                    id_string=id_list[0]
+                elif len(id_list)>1:
+                    id_string=id_list[0]
+                    for i in range(1,len(id_list)):
+                        id_string+=','+id_list[i]
 
-            url_summary = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?' + 'db=' + name + '&WebEnv=' + webenv + \
-                          '&query_key=' + query_key + '&retstart=0'+'&retmax=' + str(num)
+                url_summary = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?' + 'db=' + name +\
+                              '&retstart=0'+'&retmax=' + str(num) + 'id=' + id_string
 
             webdata = requests.get(url=url_summary).text
             soup = BeautifulSoup(webdata, 'lxml')
